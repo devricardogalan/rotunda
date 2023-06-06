@@ -1,16 +1,18 @@
-// This variables are to be used in many functions
+// This variables are meant to be used in many functions
 let objectToModify;
+let valuesToBeRemoved;
 let index;
-
 //urlParser function to split parameters
 const urlParser = (url) => {
+  this.valuesToBeRemoved=[]
   this.index=[]
   const splitted = url.split('/:');
   splitted.forEach((el,index)=>{
     //there might be values that needed to be splitted containing only '/'
     if(el.includes('/')){
-      //insert index inside index array to be checked afterwards
-      this.index.push(index);
+        this.valuesToBeRemoved.push(el.split('/')[1]);
+      //insert values inside valuesToBeRemoved array to be checked afterwards
+        this.index.push(index);
     }
   })
   //remove values that have '/' included
@@ -31,17 +33,15 @@ const convertObjectKeys = (arr) => {
 
 //Store values inside of objects given the instance of the url
 const getValuesForUrlObject = (url)=>{
-  const arr = url.split('/');
+  let arr = url.split('/');
   const previousFirstElementOfTheArray = arr.shift();
-  const arrOfElementsToRemove = [];
-  //Having the index from before, we can remove constants from the url
-  this.index.forEach((index)=>{
-    arrOfElementsToRemove.push(arr[index])
-  });
-  let newArr=[]
-  //This way we can get an array of variables only from the url
-  arrOfElementsToRemove.forEach((elToRemove,index)=>{
-      newArr = arr.filter((el)=>el!==elToRemove);
+  let newArr=[...arr]
+  //This way we can get an array of "variables-only" from the url
+    this.valuesToBeRemoved.forEach((elToRemove,index)=>{
+      if(newArr.includes(elToRemove)){
+        let indexToRemove=newArr.indexOf(elToRemove);
+        newArr.splice(indexToRemove,1);
+      }
   })
   //There might be variables that have query params tied
   newArr.forEach(function (el, index) {
@@ -49,7 +49,7 @@ const getValuesForUrlObject = (url)=>{
       this[index] = el.substring(0, el.indexOf('?'));
     }
   }, newArr);
-  //Add values to object from newArr
+  //Add values to object from the newArr
   const arrObj=Object.keys(this.objectToModify);
   arrObj.forEach((el,index)=>{
     this.objectToModify[el]=newArr[index];
